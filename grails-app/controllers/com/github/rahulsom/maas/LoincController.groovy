@@ -1,10 +1,12 @@
 package com.github.rahulsom.maas
 
+import grails.plugin.springsecurity.annotation.Secured
 import grails.transaction.Transactional
 
 import static org.springframework.http.HttpStatus.*
 
 @Transactional(readOnly = true)
+@Secured('permitAll')
 class LoincController {
 
   static allowedMethods = [save: "POST", update: "PUT", delete: "DELETE"]
