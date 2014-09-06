@@ -64,9 +64,8 @@ grails.project.dependency.resolution = {
     compile ':cache:1.1.7'
     compile ":asset-pipeline:1.9.6"
     compile ":console:1.4.4"
-    // compile ":cache-ehcache:1.0.1"
     compile ':spring-security-core:2.0-RC4'
-    // compile ":api-toolkit:2.1.11"
+    runtime ":elasticsearch:0.0.3.3"
 
     // plugins needed at runtime but not for compilation
     runtime ":hibernate4:4.3.5.5" // or ":hibernate:3.6.10.17"

@@ -2,7 +2,9 @@ package com.github.rahulsom.maas
 
 class Loinc {
 
-  String loincNum
+  static searchable = true
+
+  String id
   String component
   String property
   String timeAspct
@@ -52,12 +54,12 @@ class Loinc {
   String hl7AttachmentStructure
 
   static mapping = {
-    id name: "loincNum", generator: "assigned"
+    id generator: "assigned"
     version false
   }
 
   static constraints = {
-    loincNum maxSize: 10
+    id maxSize: 10
     component nullable: true
     property nullable: true, maxSize: 30
     timeAspct nullable: true, maxSize: 15

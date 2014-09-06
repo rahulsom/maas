@@ -9,11 +9,17 @@ import static org.springframework.http.HttpStatus.*
 @Secured('permitAll')
 class LoincController {
 
+  def elasticSearchService
   static allowedMethods = [save: "POST", update: "PUT", delete: "DELETE"]
 
   def index(Integer max) {
     params.max = Math.min(max ?: 10, 100)
-    respond Loinc.list(params), model: [loincInstanceCount: Loinc.count()]
+    if (params.q) {
+      def search = Loinc.search(params.q, params)
+      respond search.searchResults, model: [loincInstanceCount: search.total]
+    } else {
+      respond Loinc.list(params), model: [loincInstanceCount: Loinc.count()]
+    }
   }
 
   def show(Loinc loincInstance) {

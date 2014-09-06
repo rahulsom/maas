@@ -134,5 +134,32 @@ grails.plugin.springsecurity.controllerAnnotations.staticRules = [
     '/**/js/**'      : ['permitAll'],
     '/**/css/**'     : ['permitAll'],
     '/**/images/**'  : ['permitAll'],
-    '/**/favicon.ico': ['permitAll']
+    '/**/favicon.ico': ['permitAll'],
+    '/console/**'    : ['ROLE_ADMIN'],
+    '/plugins/**'    : ['ROLE_ADMIN'],
 ]
+
+elasticSearch {
+  datastoreImpl = 'hibernateDatastore'
+  disableAutoIndex = true
+  bulkIndexOnStartup = false
+}
+
+environments {
+  development {
+    /**
+     * Possible values : "local", "node", "dataNode", "transport"
+     * If set to null, "node" mode is used by default.
+     */
+    elasticSearch.client.mode = 'local'
+  }
+  test {
+    elasticSearch {
+      client.mode = 'local'
+      index.store.type = 'memory' // store local node in memory and not on disk
+    }
+  }
+  production {
+    elasticSearch.client.mode = 'node'
+  }
+}

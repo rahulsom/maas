@@ -9,7 +9,11 @@ import java.text.SimpleDateFormat
 
 class BootStrap {
 
+  def elasticSearchService
+
   def init = { servletContext ->
+    elasticSearchService.unindex()
+
     User.withNewTransaction {
       def adminRole = new Role(authority: 'ROLE_ADMIN').save(flush: true)
       def userRole = new Role(authority: 'ROLE_USER').save(flush: true)
@@ -39,7 +43,9 @@ class BootStrap {
       while (rs.next()) {
         loinc = new Loinc()
         fieldNameMap.each { String k, String v ->
-          if (loinc.metaClass.properties.find { it.name == v }.type.isAssignableFrom(String)) {
+          if (v == 'loincNum') {
+            loinc.id = rs.getString(k)
+          } else if (loinc.metaClass.properties.find { it.name == v }.type.isAssignableFrom(String)) {
             loinc[v] = rs.getString(k)
           } else if (loinc.metaClass.properties.find { it.name == v }.type.isAssignableFrom(Integer)) {
             loinc[v] = rs.getInt(k)
@@ -57,6 +63,7 @@ class BootStrap {
 
       loinc.save(flush: true, failOnError: true)
     }
+    elasticSearchService.index(Loinc)
   }
   def destroy = {
   }
