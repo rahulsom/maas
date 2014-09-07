@@ -1,5 +1,7 @@
 package com.github.rahulsom.maas
 
+import grails.converters.JSON
+import grails.converters.XML
 import grails.plugin.springsecurity.annotation.Secured
 import grails.transaction.Transactional
 import org.apache.commons.lang.StringUtils
@@ -38,7 +40,7 @@ class LoincController {
    * fileLocation - e.g. '/Users/rahulsomasunderam/Downloads/LOINC_248_Text/loinc.csv'
    */
   def save() {
-    elasticSearchService.unindex(Loinc)
+    Loinc.executeUpdate('DELETE from Loinc')
 
     def rs = new Csv().read(new FileReader(params.file), null)
     def rsm = rs.metaData
@@ -73,14 +75,21 @@ class LoincController {
       }
       loinc.save()
     }
-
+    elasticSearchService.unindex(Loinc)
     elasticSearchService.index(Loinc)
 
-    request.withFormat {
-      form multipartForm {
-        flash.message = message(code: 'default.created.message', args: [message(code: 'loinc.label', default: 'Loinc')])
+    withFormat {
+      html {
+        render("Complete!")
       }
-      '*' { respond 'Complete', [status: CREATED] }
+      json {
+        def retval = [status: 'Complete']
+        render retval as JSON
+      }
+      xml {
+        def retval = [status: 'Complete']
+        render retval as XML
+      }
     }
   }
 
