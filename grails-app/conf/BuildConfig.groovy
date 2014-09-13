@@ -66,6 +66,7 @@ grails.project.dependency.resolution = {
     compile ":console:1.4.4"
     compile ':spring-security-core:2.0-RC4'
     runtime ":elasticsearch:0.0.3.3"
+    compile ":swaggydoc:0.1"
 
     // plugins needed at runtime but not for compilation
     runtime ":hibernate4:4.3.5.5" // or ":hibernate:3.6.10.17"
