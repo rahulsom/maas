@@ -137,7 +137,8 @@ grails.plugin.springsecurity.controllerAnnotations.staticRules = [
     '/**/favicon.ico': ['permitAll'],
     '/console/**'    : ['ROLE_ADMIN'],
     '/plugins/**'    : ['ROLE_ADMIN'],
-    '/**/api/**': ['permitAll'],
+    '/metrics/**'      : ['ROLE_ADMIN'],
+    '/**/api/**'     : ['permitAll'],
 ]
 
 elasticSearch {

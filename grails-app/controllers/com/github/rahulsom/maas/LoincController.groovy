@@ -13,6 +13,7 @@ import grails.converters.XML
 import grails.plugin.springsecurity.annotation.Secured
 import grails.transaction.Transactional
 import org.apache.commons.lang.StringUtils
+import org.grails.plugins.metrics.groovy.Timed
 import org.h2.tools.Csv
 
 import java.text.SimpleDateFormat
@@ -32,6 +33,7 @@ class LoincController {
   static allowedMethods = [save: "POST", ]
 
   @SwaggyList
+  @Timed(name='loincsearch')
   def index() {
     params.max = Math.min(params.max ?: 10, 100)
     if (params.q) {
@@ -45,6 +47,7 @@ class LoincController {
   }
 
   @SwaggyShow
+  @Timed(name='loincshow')
   def show() {
     respond Loinc.get(params.id)
   }
