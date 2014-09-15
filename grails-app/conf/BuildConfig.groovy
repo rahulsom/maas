@@ -55,6 +55,8 @@ grails.project.dependency.resolution = {
     // runtime 'org.postgresql:postgresql:9.3-1101-jdbc41'
     test "org.grails:grails-datastore-test-support:1.0-grails-2.4"
     runtime 'javax:javaee-api:6.0'
+    runtime "com.codahale.metrics:metrics-jvm:3.0.1"
+    runtime "com.codahale.metrics:metrics-ehcache:3.0.1"
   }
 
   plugins {

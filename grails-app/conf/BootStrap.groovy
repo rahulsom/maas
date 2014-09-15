@@ -1,6 +1,9 @@
 import com.codahale.metrics.health.HealthCheck
 import com.codahale.metrics.health.jvm.ThreadDeadlockHealthCheck
 import com.codahale.metrics.jvm.FileDescriptorRatioGauge
+import com.codahale.metrics.jvm.GarbageCollectorMetricSet
+import com.codahale.metrics.jvm.MemoryUsageGaugeSet
+import com.codahale.metrics.jvm.ThreadStatesGaugeSet
 import com.github.rahulsom.maas.Loinc
 import com.github.rahulsom.maas.auth.Role
 import com.github.rahulsom.maas.auth.User
@@ -44,6 +47,9 @@ class BootStrap {
     })
 
     Metrics.newGauge('fileDescriptorRatio', new FileDescriptorRatioGauge())
+    Metrics.getOrAdd('gcMetricSet',new GarbageCollectorMetricSet())
+    Metrics.getOrAdd('memoryUsage',new MemoryUsageGaugeSet())
+    Metrics.getOrAdd('threadStates',new ThreadStatesGaugeSet())
 
     HealthChecks.register('threadDeadlock', new ThreadDeadlockHealthCheck())
 
