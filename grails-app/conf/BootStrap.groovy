@@ -5,9 +5,11 @@ import com.codahale.metrics.jvm.GarbageCollectorMetricSet
 import com.codahale.metrics.jvm.MemoryUsageGaugeSet
 import com.codahale.metrics.jvm.ThreadStatesGaugeSet
 import com.github.rahulsom.maas.Loinc
+import com.github.rahulsom.maas.NdcProduct
 import com.github.rahulsom.maas.auth.Role
 import com.github.rahulsom.maas.auth.User
 import com.github.rahulsom.maas.auth.UserRole
+import grails.util.Environment
 import org.grails.plugins.metrics.groovy.HealthChecks
 import org.grails.plugins.metrics.groovy.Metrics
 
@@ -22,6 +24,12 @@ class BootStrap {
 
         def admin = new User(username: 'admin', password: 'admin').save(flush: true)
         def user = new User(username: 'user', password: 'user').save(flush: true)
+
+        if (Environment.current == Environment.DEVELOPMENT) {
+          def rahul = new User(username: 'rahul', password: 'rahul').save(flush: true)
+          UserRole.create rahul, adminRole, true
+          UserRole.create rahul, userRole, true
+        }
 
         UserRole.create admin, adminRole, true
         UserRole.create user, userRole, true
@@ -41,8 +49,17 @@ class BootStrap {
       @Override
       protected HealthCheck.Result check() throws Exception {
         return Loinc.count() ?
-            HealthCheck. Result.healthy("${User.count()} loinc codes found") :
+            HealthCheck. Result.healthy("${Loinc.count()} loinc codes found") :
             HealthCheck.Result.unhealthy('No loinc codes found')
+      }
+    })
+
+    HealthChecks.register('ndc',new HealthCheck() {
+      @Override
+      protected HealthCheck.Result check() throws Exception {
+        return NdcProduct.count() ?
+            HealthCheck. Result.healthy("${NdcProduct.count()} ndc products found") :
+            HealthCheck.Result.unhealthy('No ndc products found')
       }
     })
 

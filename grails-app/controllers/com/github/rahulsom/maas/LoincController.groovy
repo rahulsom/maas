@@ -15,6 +15,8 @@ import grails.transaction.Transactional
 import org.apache.commons.lang.StringUtils
 import org.grails.plugins.metrics.groovy.Timed
 import org.h2.tools.Csv
+import org.hibernate.StatelessSession
+import org.hibernate.Transaction
 
 import java.text.SimpleDateFormat
 
@@ -22,14 +24,14 @@ import static org.springframework.http.HttpStatus.NOT_FOUND
 
 @Transactional(readOnly = true)
 @Secured('ROLE_USER')
-@Api(value = "Loinc Code",
+@Api(value = "Loinc Code", description = "LOINC Codes",
     produces = 'application/json,application/xml,text/html',
     consumes = 'application/json,application/xml,application/x-www-form-urlencoded'
 )
 class LoincController {
 
-  Class resource = Loinc
   def elasticSearchService
+  def sessionFactory
   static allowedMethods = [save: "POST", ]
 
   @SwaggyList
@@ -52,19 +54,19 @@ class LoincController {
     respond Loinc.get(params.id)
   }
 
-  @Transactional
   @Secured('ROLE_ADMIN')
   @ApiOperation(value = "Save LOINC Codes", response = Void)
   @ApiResponses([
       @ApiResponse(code = 422, message = 'Bad Entity Received'),
   ])
   @ApiImplicitParams([
-      @ApiImplicitParam(name = 'file', paramType = 'form', required = true, dataType = 'string'),
+      @ApiImplicitParam(name = 'file', paramType = 'form', required = true, dataType = 'string',
+          value="CSV File from downloaded zip. E.g. '/Users/rahulsomasunderam/Downloads/LOINC_248_Text/loinc.csv'"),
   ])
-  /**
-   * fileLocation - e.g. '/Users/rahulsomasunderam/Downloads/LOINC_248_Text/loinc.csv'
-   */
   def save() {
+    StatelessSession session = sessionFactory.openStatelessSession()
+    Transaction tx = session.beginTransaction()
+
     Loinc.executeUpdate('DELETE from Loinc')
 
     def rs = new Csv().read(new FileReader(params.file), null)
@@ -80,6 +82,8 @@ class LoincController {
       [colName, fieldName]
     }
     Loinc loinc = null
+    int batchSize = 0
+    long lastCheck = System.nanoTime()
     while (rs.next()) {
       loinc = new Loinc()
       fieldNameMap.each { String k, String v ->
@@ -98,8 +102,19 @@ class LoincController {
           println "Unhandled field type: ${loinc.metaClass.properties[v].class}"
         }
       }
-      loinc.save()
+      // loinc.save(flush: ++batchSize % 200 == 0)
+      session.insert(loinc)
+      if (++batchSize %200 == 0) {
+        long newCheck = System.nanoTime()
+        println "${batchSize} loincs down in ${(newCheck - lastCheck)/1000000.0} ms"
+        lastCheck = newCheck
+      }
+
     }
+
+    tx.commit()
+    session.close()
+
     elasticSearchService.unindex(Loinc)
     elasticSearchService.index(Loinc)
 
