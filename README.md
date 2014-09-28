@@ -25,11 +25,11 @@ Deployment
   2. Deploy to a tomcat instance.
   3. Download the code files.
   4. Using the api console, load the data.
-  
+
 Data Files
 ----
 
 | DataSet | Location | Status | Comments |
 |---------|--------|-----|-----|
 | LOINC   | [ZIP/CSV](https://loinc.org/downloads/loinc) | Working | Need to sign up for account to download codes |
-| NDC   | [ZIP/TSV](http://www.fda.gov/drugs/informationondrugs/ucm142438.htm) | WIP | Open Licensed by FDA |
+| NDC   | [ZIP/TSV](http://www.fda.gov/drugs/informationondrugs/ucm142438.htm) | Working | Open Licensed by FDA |
