@@ -2,7 +2,9 @@ package com.github.rahulsom.maas
 
 class NdcProduct {
 
-  static searchable = true
+  static searchable = {
+    packages component: true
+  }
 
   String id
   String productNdc
