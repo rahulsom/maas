@@ -24,7 +24,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND
 @Transactional(readOnly = true)
 @Secured('ROLE_USER')
 @Api(value = "NDC Code", description = "NDC Codes",
-    produces = 'application/json,application/xml,text/html',
+    produces = 'application/json,application/hal+json,application/xml,text/html',
     consumes = 'application/json,application/xml,application/x-www-form-urlencoded'
 )
 
@@ -40,11 +40,9 @@ class NdcProductController {
     params.max = Math.min(params.max ?: 10, 100)
     if (params.q) {
       def search = NdcProduct.search(params.q, params)
-      def result = new ListResponse(search.total as int, search.searchResults as List<NdcProduct>)
-      respond result, model: [ndcProductInstanceCount: search.total]
+      respond search.searchResults , model: [ndcProductInstanceCount: search.total]
     } else {
-      def result = new ListResponse(NdcProduct.count(), NdcProduct.list(params))
-      respond result, model: [ndcProductInstanceCount: NdcProduct.count()]
+      respond NdcProduct.list(params), model: [ndcProductInstanceCount: NdcProduct.count()]
     }
   }
 

@@ -25,7 +25,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND
 @Transactional(readOnly = true)
 @Secured('ROLE_USER')
 @Api(value = "Loinc Code", description = "LOINC Codes",
-    produces = 'application/json,application/xml,text/html',
+    produces = 'application/json,application/hal+json,application/xml,text/html',
     consumes = 'application/json,application/xml,application/x-www-form-urlencoded'
 )
 class LoincController {
@@ -40,11 +40,9 @@ class LoincController {
     params.max = Math.min(params.max ?: 10, 100)
     if (params.q) {
       def search = Loinc.search(params.q, params)
-      def result = new ListResponse(search.total as int, search.searchResults as List<Loinc>)
-      respond result, model: [loincInstanceCount: search.total]
+      respond search.searchResults, model: [loincInstanceCount: search.total]
     } else {
-      def result = new ListResponse(Loinc.count(), Loinc.list(params))
-      respond result, model: [loincInstanceCount: Loinc.count()]
+      respond Loinc.list(params), model: [loincInstanceCount: Loinc.count()]
     }
   }
 
