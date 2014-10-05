@@ -153,7 +153,6 @@ grails.plugin.springsecurity.ajaxCheckClosure = { HttpServletRequest request ->
             collectEntries {k,v -> [ k,(v?:"q=1.0").replace('q=','').toDouble() ]}.
             sort { - it.value }*.key
 
-    println weightedHeaders
     for (int i = 0; i < weightedHeaders.size(); i++) {
         def value = weightedHeaders[i]
         if (value.contains('html')) {
