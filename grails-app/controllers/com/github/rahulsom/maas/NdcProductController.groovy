@@ -37,8 +37,11 @@ class NdcProductController {
   @SwaggyList
   @Timed(name='ndcsearch')
   def index() {
-    params.max = Math.min(params.max ?: 10, 100)
+    params.max = Math.min(params.int('max') ?: 10, 100)
+    params.offset =  params.int('offset') ?: 0
     if (params.q) {
+      params.from = params.offset
+      params.size = params.max
       def search = NdcProduct.search(params.q, params)
       respond search.searchResults , model: [ndcProductInstanceCount: search.total]
     } else {
