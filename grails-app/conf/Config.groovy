@@ -142,8 +142,6 @@ grails.plugin.springsecurity.controllerAnnotations.staticRules = [
     '/metrics/**'      : ['ROLE_ADMIN'],
     '/**/api/**'     : ['permitAll'],
 ]
-
-
 grails.plugin.springsecurity.ajaxCheckClosure = { HttpServletRequest request ->
     String urlFormat = request.getParameter('format') ?: request.requestURL.tokenize('.')[-1]
     if (urlFormat in ['json', 'xml', 'hal']) {
@@ -166,6 +164,7 @@ grails.plugin.springsecurity.ajaxCheckClosure = { HttpServletRequest request ->
     }
     return false
 }
+grails.plugin.springsecurity.logout.postOnly = false
 
 elasticSearch {
   datastoreImpl = 'hibernateDatastore'
