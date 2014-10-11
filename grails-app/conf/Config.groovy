@@ -191,3 +191,7 @@ environments {
     elasticSearch.client.mode = 'node'
   }
 }
+
+grails.assets.less.compile = 'less4j'
+grails.assets.plugin."twitter-bootstrap".excludes = ["**/*.less"]
+grails.assets.plugin."twitter-bootstrap".includes = ["bootstrap.less"]
