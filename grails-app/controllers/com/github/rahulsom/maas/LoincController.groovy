@@ -62,7 +62,7 @@ class LoincController {
   ])
   @ApiImplicitParams([
       @ApiImplicitParam(name = 'file', paramType = 'form', required = true, dataType = 'string',
-          value="CSV File from downloaded zip. E.g. '/Users/rahulsomasunderam/Downloads/LOINC_248_Text/loinc.csv'"),
+          value="CSV File from downloaded zip. E.g. '/opt/loinc/loinc.csv'"),
   ])
   def save() {
     StatelessSession session = sessionFactory.openStatelessSession()

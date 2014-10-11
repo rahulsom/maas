@@ -62,9 +62,9 @@ class NdcProductController {
   ])
   @ApiImplicitParams([
       @ApiImplicitParam(name = 'package', paramType = 'form', required = true, dataType = 'string',
-          value="CSV File from downloaded zip. E.g. '/Users/rahulsomasunderam/Downloads/ndc/package.txt'"),
+          value="CSV File from downloaded zip. E.g. '/opt/ndc/package.txt'"),
       @ApiImplicitParam(name = 'product', paramType = 'form', required = true, dataType = 'string',
-          value="CSV File from downloaded zip. E.g. '/Users/rahulsomasunderam/Downloads/ndc/product.txt'"),
+          value="CSV File from downloaded zip. E.g. '/opt/ndc/product.txt'"),
   ])
   def save() {
     StatelessSession session = sessionFactory.openStatelessSession()
