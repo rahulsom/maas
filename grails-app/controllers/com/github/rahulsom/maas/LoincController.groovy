@@ -2,23 +2,12 @@ package com.github.rahulsom.maas
 
 import com.github.rahulsom.swaggydoc.SwaggyList
 import com.github.rahulsom.swaggydoc.SwaggyShow
-import com.wordnik.swagger.annotations.Api
-import com.wordnik.swagger.annotations.ApiImplicitParam
-import com.wordnik.swagger.annotations.ApiImplicitParams
-import com.wordnik.swagger.annotations.ApiOperation
-import com.wordnik.swagger.annotations.ApiResponse
-import com.wordnik.swagger.annotations.ApiResponses
+import com.wordnik.swagger.annotations.*
 import grails.converters.JSON
 import grails.converters.XML
 import grails.plugin.springsecurity.annotation.Secured
 import grails.transaction.Transactional
-import org.apache.commons.lang.StringUtils
 import org.grails.plugins.metrics.groovy.Timed
-import org.h2.tools.Csv
-import org.hibernate.StatelessSession
-import org.hibernate.Transaction
-
-import java.text.SimpleDateFormat
 
 import static org.springframework.http.HttpStatus.NOT_FOUND
 
@@ -30,8 +19,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND
 )
 class LoincController {
 
-  def elasticSearchService
-  def sessionFactory
+  def dataService
   static allowedMethods = [save: "POST", ]
 
   @SwaggyList
@@ -65,59 +53,8 @@ class LoincController {
           value="CSV File from downloaded zip. E.g. '/opt/loinc/loinc.csv'"),
   ])
   def save() {
-    StatelessSession session = sessionFactory.openStatelessSession()
-    Transaction tx = session.beginTransaction()
 
-    Loinc.executeUpdate('DELETE from Loinc')
-
-    def rs = new Csv().read(new FileReader(params.file), null)
-    def rsm = rs.metaData
-    def fieldNameMap = (1..(rsm.columnCount)).collect().collectEntries { i ->
-      def colName = rsm.getColumnName(i)
-      def fieldName = StringUtils.uncapitalize(colName.split('_').collect {
-        StringUtils.capitalize(it.toLowerCase())
-      }.join(''))
-      if (fieldName == 'class') {
-        fieldName += '_'
-      }
-      [colName, fieldName]
-    }
-    Loinc loinc = null
-    int batchSize = 0
-    long lastCheck = System.nanoTime()
-    while (rs.next()) {
-      loinc = new Loinc()
-      fieldNameMap.each { String k, String v ->
-        if (v == 'loincNum') {
-          loinc.id = rs.getString(k)
-        } else if (loinc.metaClass.properties.find { it.name == v }.type.isAssignableFrom(String)) {
-          loinc[v] = rs.getString(k)
-        } else if (loinc.metaClass.properties.find { it.name == v }.type.isAssignableFrom(Integer)) {
-          loinc[v] = rs.getInt(k)
-        } else if (loinc.metaClass.properties.find { it.name == v }.type.isAssignableFrom(Date)) {
-          def strVal = rs.getString(k)
-          if (strVal) {
-            loinc[v] = new SimpleDateFormat('yyyyMMdd').parse(strVal)
-          }
-        } else {
-          println "Unhandled field type: ${loinc.metaClass.properties[v].class}"
-        }
-      }
-      // loinc.save(flush: ++batchSize % 200 == 0)
-      session.insert(loinc)
-      if (++batchSize %200 == 0) {
-        long newCheck = System.nanoTime()
-        println "${batchSize} loincs down in ${(newCheck - lastCheck)/1000000.0} ms"
-        lastCheck = newCheck
-      }
-
-    }
-
-    tx.commit()
-    session.close()
-
-    elasticSearchService.unindex(Loinc)
-    elasticSearchService.index(Loinc)
+    dataService.storeLoinc(params.file)
 
     withFormat {
       html {

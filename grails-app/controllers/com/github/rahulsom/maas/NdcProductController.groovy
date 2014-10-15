@@ -30,8 +30,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND
 
 class NdcProductController {
 
-  def sessionFactory
-  def elasticSearchService
+  def dataService
   static allowedMethods = [save: "POST", ]
 
   @SwaggyList
@@ -67,90 +66,10 @@ class NdcProductController {
           value="CSV File from downloaded zip. E.g. '/opt/ndc/product.txt'"),
   ])
   def save() {
-    StatelessSession session = sessionFactory.openStatelessSession()
-    Transaction tx = session.beginTransaction()
+    def productFile = params.product
+    def packageFile = params.package
 
-    NdcProduct.executeUpdate('DELETE from NdcPackage')
-    NdcProduct.executeUpdate('DELETE from NdcProduct')
-
-    def prodResultSet = new Csv(fieldSeparatorRead: '\t' as char).read(new FileReader(params.product), null)
-    def packResultSet = new Csv(fieldSeparatorRead: '\t' as char).read(new FileReader(params.package), null)
-    def prodFields = [
-        "PRODUCTID": "id",
-        "PRODUCTNDC": "productNdc",
-        "PRODUCTTYPENAME": "productTypeName",
-        "PROPRIETARYNAME": "proprietaryName",
-        "PROPRIETARYNAMESUFFIX": "proprietaryNameSuffix",
-        "NONPROPRIETARYNAME": "nonProprietaryName",
-        "DOSAGEFORMNAME": "dosageFormName",
-        "ROUTENAME": "routeName",
-        "STARTMARKETINGDATE": "startMarketingDate",
-        "ENDMARKETINGDATE": "endMarketingDate",
-        "MARKETINGCATEGORYNAME": "marketingCategoryName",
-        "APPLICATIONNUMBER": "applicationNumber",
-        "LABELERNAME": "labelerName",
-        "SUBSTANCENAME": "substanceName",
-        "ACTIVE_NUMERATOR_STRENGTH": "activeNumeratorStrength",
-        "ACTIVE_INGRED_UNIT": "activeIngredUnit",
-        "PHARM_CLASSES": "pharmClasses",
-        "DEASCHEDULE": "deaSchedule"
-    ]
-    NdcProduct ndcProduct = null
-    int batchSize = 0
-    long lastCheck = System.nanoTime()
-    while (prodResultSet.next()) {
-      ndcProduct = new NdcProduct()
-      prodFields.each { String k, String v ->
-        if (ndcProduct.metaClass.properties.find { it.name == v }.type.isAssignableFrom(String)) {
-          ndcProduct[v] = prodResultSet.getString(k)
-        } else if (ndcProduct.metaClass.properties.find { it.name == v }.type.isAssignableFrom(Integer)) {
-          ndcProduct[v] = prodResultSet.getInt(k)
-        } else if (ndcProduct.metaClass.properties.find { it.name == v }.type.isAssignableFrom(Date)) {
-          def strVal = prodResultSet.getString(k)
-          if (strVal) {
-            ndcProduct[v] = new SimpleDateFormat('yyyyMMdd').parse(strVal)
-          }
-        } else {
-          println "Unhandled field type: ${ndcProduct.metaClass.properties[v].class}"
-        }
-      }
-      session.insert(ndcProduct)
-      if (++batchSize %200 == 0) {
-        long newCheck = System.nanoTime()
-        println "${batchSize} products down in ${(newCheck - lastCheck)/1000000.0} ms"
-        lastCheck = newCheck
-      }
-
-    }
-    tx.commit()
-    tx = session.beginTransaction()
-    batchSize = 0
-    while (packResultSet.next()) {
-      String productId = packResultSet.getString('PRODUCTID')
-      if (errata[productId]) {
-        productId = errata[productId]
-      }
-      if (!badIds.contains(productId)) {
-        def ndcPackage = new NdcPackage(
-            ndcPackageCode: packResultSet.getString('NDCPACKAGECODE'),
-            packageDescription: packResultSet.getString('PACKAGEDESCRIPTION'),
-            product: NdcProduct.load(productId)
-        )
-
-        session.insert(ndcPackage)
-      }
-      if (++batchSize %200 == 0) {
-        long newCheck = System.nanoTime()
-        println "${batchSize} packages down in ${(newCheck - lastCheck)/1000000.0} ms"
-        lastCheck = newCheck
-      }
-    }
-
-    tx.commit()
-    session.close()
-
-    elasticSearchService.unindex(NdcProduct)
-    elasticSearchService.index(NdcProduct)
+    dataService.storeNdc(productFile, packageFile, errata, badIds)
 
     withFormat {
       html {
