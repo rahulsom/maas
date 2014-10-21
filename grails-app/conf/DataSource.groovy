@@ -19,15 +19,7 @@ environments {
   development {
     dataSource {
       dbCreate = "update" // one of 'create', 'create-drop', 'update', 'validate', ''
-      url = "jdbc:h2:devDb;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE"
-    }
-  }
-  dbrev {
-    dataSource {
-      dbCreate = "" // one of 'create', 'create-drop', 'update', 'validate', ''
-      url = "jdbc:mysql://localhost/maas"
-      username = 'maas'
-      password = 'maas'
+      url = "jdbc:h2:data/devDb;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE"
     }
   }
   test {
