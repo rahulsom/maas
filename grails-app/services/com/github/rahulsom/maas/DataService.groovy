@@ -59,8 +59,7 @@ class DataService {
       session.insert(loinc)
       if (++batchSize %200 == 0) {
         long newCheck = System.nanoTime()
-        println "${batchSize} loincs down in ${(newCheck - lastCheck)/1000000.0} ms"
-        lastCheck = newCheck
+        System.out.print "\r ${batchSize} loincs down in ${(newCheck - lastCheck)/1000000.0} ms"
       }
 
     }
@@ -123,14 +122,14 @@ class DataService {
       session.insert(ndcProduct)
       if (++batchSize %200 == 0) {
         long newCheck = System.nanoTime()
-        println "${batchSize} products down in ${(newCheck - lastCheck)/1000000.0} ms"
-        lastCheck = newCheck
+        System.out.print "\r ${batchSize} products down in ${(newCheck - lastCheck)/1000000.0} ms"
       }
 
     }
     tx.commit()
     tx = session.beginTransaction()
     batchSize = 0
+    lastCheck = System.nanoTime()
     while (packResultSet.next()) {
       String productId = packResultSet.getString('PRODUCTID')
       if (errata[productId]) {
@@ -147,8 +146,7 @@ class DataService {
       }
       if (++batchSize %200 == 0) {
         long newCheck = System.nanoTime()
-        println "${batchSize} packages down in ${(newCheck - lastCheck)/1000000.0} ms"
-        lastCheck = newCheck
+        System.out.print "\r ${batchSize} packages down in ${(newCheck - lastCheck)/1000000.0} ms"
       }
     }
 

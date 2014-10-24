@@ -2,21 +2,23 @@ import com.github.rahulsom.maas.NdcProductController
 
 def service = ctx.getBean('dataService')
 def dataHome = "/opt"
+
 boolean shaMatches(String shaName, String fileName) {
-  def shaFile = new File("data/loinc.sha1")
+  def shaFile = new File(shaName)
   if (!shaFile.exists()) {
     return false
   }
   def fileSha = shaFile.text
-  def trueSha = "sha1sum $fileName | cut -d " " -f 1".execute.inputStream.text
+  def trueSha = "sha1sum $fileName | cut -d ' ' -f 1".execute().inputStream.text.split(' ')[0]
   return fileSha == trueSha
 }
 
 def updateSha(String shaName, String fileName) {
-  def shaFile = new File("data/loinc.sha1")
-  def trueSha = "sha1sum $fileName | cut -d " " -f 1".execute.inputStream.text
+  def shaFile = new File(shaName)
+  def trueSha = "sha1sum $fileName | cut -d ' ' -f 1".execute().inputStream.text.split(' ')[0]
   shaFile.text = trueSha
 }
+
 if (!shaMatches("data/loinc.sha1", "$dataHome/loinc/loinc.csv")) {
   service.storeLoinc("$dataHome/loinc/loinc.csv")
   updateSha("data/loinc.sha1", "$dataHome/loinc/loinc.csv")
