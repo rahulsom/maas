@@ -1,7 +1,8 @@
 import com.github.rahulsom.maas.NdcProductController
 
+def env = System.getenv()
 def service = ctx.getBean('dataService')
-def dataHome = "/opt"
+def dataHome = env['DATADIR'] ?: "/opt"
 
 boolean shaMatches(String shaName, String fileName) {
   def shaFile = new File(shaName)

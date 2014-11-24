@@ -165,6 +165,8 @@ grails.plugin.springsecurity.ajaxCheckClosure = { HttpServletRequest request ->
     return false
 }
 grails.plugin.springsecurity.logout.postOnly = false
+grails.plugin.springsecurity.useBasicAuth = true
+
 
 elasticSearch {
   datastoreImpl = 'hibernateDatastore'
