@@ -1,5 +1,3 @@
-import com.github.rahulsom.maas.NdcProductController
-
 def env = System.getenv()
 def service = ctx.getBean('dataService')
 def dataHome = env['DATADIR'] ?: "/opt"
@@ -24,9 +22,22 @@ if (!shaMatches("data/loinc.sha1", "$dataHome/loinc/loinc.csv")) {
   service.storeLoinc("$dataHome/loinc/loinc.csv")
   updateSha("data/loinc.sha1", "$dataHome/loinc/loinc.csv")
 }
+
 if (!shaMatches("data/product.sha1", "$dataHome/ndc/product.txt") ||
     !shaMatches("data/package.sha1", "$dataHome/ndc/package.txt")) {
-  service.storeNdc("$dataHome/ndc/product.txt", "$dataHome/ndc/package.txt", NdcProductController.errata, NdcProductController.badIds)
+  def errata = [:]
+  def badIds = []
+  new File("$dataHome/ndc/ndc-diff.txt").eachLine {
+    // Packages to left
+    // Products to right
+    def (packageId, productId) = it.tokenize('|<>')*.trim()
+    if (packageId && productId) {
+      errata[packageId] = productId
+    } else if (packageId) {
+      badIds << packageId
+    }
+  }
+  service.storeNdc("$dataHome/ndc/product.txt", "$dataHome/ndc/package.txt", errata, badIds)
   updateSha("data/product.sha1", "$dataHome/ndc/product.txt")
   updateSha("data/package.sha1", "$dataHome/ndc/package.txt")
 }

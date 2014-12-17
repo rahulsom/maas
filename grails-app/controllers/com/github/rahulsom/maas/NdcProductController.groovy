@@ -96,9 +96,4 @@ class NdcProductController {
     }
   }
 
-  static errata = [:]
-
-  static badIds = [
-      "0054-8722_645709c0-48d1-444f-8d51-f38b7109ecf3"
-  ]
 }

@@ -17,7 +17,7 @@ class DataService {
   def elasticSearchService
 
   void storeLoinc(String loincFile) {
-    StatelessSession session = ((SessionFactory)sessionFactory).openStatelessSession()
+    StatelessSession session = ((SessionFactory) sessionFactory).openStatelessSession()
     Transaction tx = session.beginTransaction()
 
     Loinc.executeUpdate('DELETE from Loinc')
@@ -25,7 +25,7 @@ class DataService {
     def resultSet = new Csv().read(new FileReader(loincFile), null)
     def resultSetMetaData = resultSet.metaData
 
-    Map<String,String> fieldNameMap = (1..(resultSetMetaData.columnCount)).collect().collectEntries { int i ->
+    Map<String, String> fieldNameMap = (1..(resultSetMetaData.columnCount)).collect().collectEntries { int i ->
       def colName = resultSetMetaData.getColumnName(i)
       def fieldName = StringUtils.uncapitalize(colName.split('_').collect { String it ->
         StringUtils.capitalize(it.toLowerCase())
@@ -57,9 +57,9 @@ class DataService {
         }
       }
       session.insert(loinc)
-      if (++batchSize %200 == 0) {
+      if (++batchSize % 200 == 0) {
         long newCheck = System.nanoTime()
-        System.out.print "\r ${batchSize} loincs down in ${(newCheck - lastCheck)/1000000.0} ms"
+        System.out.print "\r ${batchSize} loincs down in ${(newCheck - lastCheck) / 1000000.0} ms"
       }
 
     }
@@ -67,12 +67,12 @@ class DataService {
     tx.commit()
     session.close()
 
-    ((ElasticSearchService)elasticSearchService).unindex(Loinc)
-    ((ElasticSearchService)elasticSearchService).index(Loinc)
+    ((ElasticSearchService) elasticSearchService).unindex(Loinc)
+    ((ElasticSearchService) elasticSearchService).index(Loinc)
   }
 
-  void storeNdc(String productFile, String packageFile, Map<String,String> errata, List<String> badIds) {
-    StatelessSession session = ((SessionFactory)sessionFactory).openStatelessSession()
+  void storeNdc(String productFile, String packageFile, Map<String, String> errata, List<String> badIds) {
+    StatelessSession session = ((SessionFactory) sessionFactory).openStatelessSession()
     Transaction tx = session.beginTransaction()
 
     NdcProduct.executeUpdate('DELETE from NdcPackage')
@@ -81,24 +81,24 @@ class DataService {
     def prodResultSet = new Csv(fieldSeparatorRead: '\t' as char).read(new FileReader(productFile), null)
     def packResultSet = new Csv(fieldSeparatorRead: '\t' as char).read(new FileReader(packageFile), null)
     def prodFields = [
-        "PRODUCTID": "id",
-        "PRODUCTNDC": "productNdc",
-        "PRODUCTTYPENAME": "productTypeName",
-        "PROPRIETARYNAME": "proprietaryName",
-        "PROPRIETARYNAMESUFFIX": "proprietaryNameSuffix",
-        "NONPROPRIETARYNAME": "nonProprietaryName",
-        "DOSAGEFORMNAME": "dosageFormName",
-        "ROUTENAME": "routeName",
-        "STARTMARKETINGDATE": "startMarketingDate",
-        "ENDMARKETINGDATE": "endMarketingDate",
-        "MARKETINGCATEGORYNAME": "marketingCategoryName",
-        "APPLICATIONNUMBER": "applicationNumber",
-        "LABELERNAME": "labelerName",
-        "SUBSTANCENAME": "substanceName",
+        "PRODUCTID"                : "id",
+        "PRODUCTNDC"               : "productNdc",
+        "PRODUCTTYPENAME"          : "productTypeName",
+        "PROPRIETARYNAME"          : "proprietaryName",
+        "PROPRIETARYNAMESUFFIX"    : "proprietaryNameSuffix",
+        "NONPROPRIETARYNAME"       : "nonProprietaryName",
+        "DOSAGEFORMNAME"           : "dosageFormName",
+        "ROUTENAME"                : "routeName",
+        "STARTMARKETINGDATE"       : "startMarketingDate",
+        "ENDMARKETINGDATE"         : "endMarketingDate",
+        "MARKETINGCATEGORYNAME"    : "marketingCategoryName",
+        "APPLICATIONNUMBER"        : "applicationNumber",
+        "LABELERNAME"              : "labelerName",
+        "SUBSTANCENAME"            : "substanceName",
         "ACTIVE_NUMERATOR_STRENGTH": "activeNumeratorStrength",
-        "ACTIVE_INGRED_UNIT": "activeIngredUnit",
-        "PHARM_CLASSES": "pharmClasses",
-        "DEASCHEDULE": "deaSchedule"
+        "ACTIVE_INGRED_UNIT"       : "activeIngredUnit",
+        "PHARM_CLASSES"            : "pharmClasses",
+        "DEASCHEDULE"              : "deaSchedule"
     ]
     NdcProduct ndcProduct = null
     int batchSize = 0
@@ -120,9 +120,9 @@ class DataService {
         }
       }
       session.insert(ndcProduct)
-      if (++batchSize %200 == 0) {
+      if (++batchSize % 200 == 0) {
         long newCheck = System.nanoTime()
-        System.out.print "\r ${batchSize} products down in ${(newCheck - lastCheck)/1000000.0} ms"
+        System.out.print "\r ${batchSize} products down in ${(newCheck - lastCheck) / 1000000.0} ms"
       }
 
     }
@@ -144,16 +144,16 @@ class DataService {
 
         session.insert(ndcPackage)
       }
-      if (++batchSize %200 == 0) {
+      if (++batchSize % 200 == 0) {
         long newCheck = System.nanoTime()
-        System.out.print "\r ${batchSize} packages down in ${(newCheck - lastCheck)/1000000.0} ms"
+        System.out.print "\r ${batchSize} packages down in ${(newCheck - lastCheck) / 1000000.0} ms"
       }
     }
 
     tx.commit()
     session.close()
 
-    ((ElasticSearchService)elasticSearchService).unindex(NdcProduct)
-    ((ElasticSearchService)elasticSearchService).index(NdcProduct)
+    ((ElasticSearchService) elasticSearchService).unindex(NdcProduct)
+    ((ElasticSearchService) elasticSearchService).index(NdcProduct)
   }
 }
