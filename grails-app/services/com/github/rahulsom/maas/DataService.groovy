@@ -156,4 +156,87 @@ class DataService {
     ((ElasticSearchService) elasticSearchService).unindex(NdcProduct)
     ((ElasticSearchService) elasticSearchService).index(NdcProduct)
   }
+
+  void storeIcd9Dx(String longFile, String shortFile) {
+    StatelessSession session = ((SessionFactory) sessionFactory).openStatelessSession()
+    Transaction tx = session.beginTransaction()
+
+    NdcProduct.executeUpdate('DELETE from Icd9Dx ')
+
+    def longStream = new File(longFile).newReader("ISO-8859-1")
+    def shortStream = new File(shortFile).newReader("ISO-8859-1")
+
+    Icd9Dx icd9Dx = null
+    int batchSize = 0
+    long lastCheck = System.nanoTime()
+    while (true) {
+      def lParts = longStream.readLine().split(' ', 2).toList()
+      def lId = lParts[0]
+      def lName = lParts[1]
+
+      def sParts = shortStream.readLine().split(' ', 2).toList()
+      def sId = sParts[0]
+      def sName = sParts[1]
+
+      if (sId == lId) {
+        icd9Dx = new Icd9Dx(id: lId, longName: lName, shortName: sName)
+      }
+
+      session.insert(icd9Dx)
+      if (++batchSize % 200 == 0) {
+        long newCheck = System.nanoTime()
+        System.out.print "\r ${batchSize} ICD Diagnoses down in ${(newCheck - lastCheck) / 1000000.0} ms"
+      }
+
+      if (!longStream.ready() || !shortStream.ready()) {
+        break
+      }
+    }
+
+    tx.commit()
+
+    ((ElasticSearchService) elasticSearchService).unindex(Icd9Dx)
+    ((ElasticSearchService) elasticSearchService).index(Icd9Dx)
+  }
+  void storeIcd9Sg(String longFile, String shortFile) {
+    StatelessSession session = ((SessionFactory) sessionFactory).openStatelessSession()
+    Transaction tx = session.beginTransaction()
+
+    NdcProduct.executeUpdate('DELETE from Icd9Sg')
+
+    def longStream = new File(longFile).newReader("ISO-8859-1")
+    def shortStream = new File(shortFile).newReader("ISO-8859-1")
+
+    Icd9Sg icd9Sg = null
+    int batchSize = 0
+    long lastCheck = System.nanoTime()
+    while (true) {
+      def lParts = longStream.readLine().split(' ', 2).toList()
+      def lId = lParts[0]
+      def lName = lParts[1]
+
+      def sParts = shortStream.readLine().split(' ', 2).toList()
+      def sId = sParts[0]
+      def sName = sParts[1]
+
+      if (sId == lId) {
+        icd9Sg = new Icd9Sg(id: lId, longName: lName, shortName: sName)
+      }
+
+      session.insert(icd9Sg)
+      if (++batchSize % 200 == 0) {
+        long newCheck = System.nanoTime()
+        System.out.print "\r ${batchSize} ICD Procedures down in ${(newCheck - lastCheck) / 1000000.0} ms"
+      }
+
+      if (!longStream.ready() || !shortStream.ready()) {
+        break
+      }
+    }
+
+    tx.commit()
+
+    ((ElasticSearchService) elasticSearchService).unindex(Icd9Sg)
+    ((ElasticSearchService) elasticSearchService).index(Icd9Sg)
+  }
 }
