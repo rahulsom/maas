@@ -19,7 +19,11 @@ Hacking
 Deployment
 ----
 
-1. Docker - TODO
+1. Docker - Run these 2 commands:
+```bash
+docker pull rahulsom/maas
+docker run -d -p 8080 -v /opt/maas:/opt/maas-master/data rahulsom/maas
+```
 2. Manual Deployment
   1. Download the war
   2. Deploy to a tomcat instance.
@@ -33,3 +37,4 @@ Data Files
 |---------|--------|-----|-----|
 | LOINC   | [ZIP/CSV](https://loinc.org/downloads/loinc) | Working | Need to sign up for account to download codes |
 | NDC   | [ZIP/TSV](http://www.fda.gov/drugs/informationondrugs/ucm142438.htm) | Working | Open Licensed by FDA |
+| ICD-9 | [GZIP/TAR/FLATFILE](https://github.com/rahulsom/maas/archive/master.tar.gz) | Working | Licensed by WHO to US |
